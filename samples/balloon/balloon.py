@@ -36,9 +36,11 @@ import skimage.draw
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
-
+ROOT_DIR = '/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/'
+print(ROOT_DIR)
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
+print(sys.path)
 from mrcnn.config import Config
 from mrcnn import model as modellib, utils
 
@@ -63,7 +65,7 @@ class BalloonConfig(Config):
 
     # We use a GPU with 12GB memory, which can fit two images.
     # Adjust down if you use a smaller GPU.
-    IMAGES_PER_GPU = 2
+    IMAGES_PER_GPU = 4
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # Background + balloon
@@ -195,7 +197,7 @@ def train(model):
     print("Training network heads")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=30,
+                epochs=900,
                 layers='heads')
 
 
