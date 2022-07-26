@@ -36,6 +36,7 @@ import skimage.draw
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
+ROOT_DIR = '/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/'
 print(ROOT_DIR)
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
