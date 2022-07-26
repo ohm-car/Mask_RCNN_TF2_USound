@@ -36,9 +36,10 @@ import skimage.draw
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
-
+print(ROOT_DIR)
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
+print(sys.path)
 from mrcnn.config import Config
 from mrcnn import model as modellib, utils
 
