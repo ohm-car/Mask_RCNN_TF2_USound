@@ -36,9 +36,11 @@ import skimage.draw
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
-
+# ROOT_DIR = '/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/'
+print(ROOT_DIR)
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
+print(sys.path)
 from mrcnn.config import Config
 from mrcnn import model as modellib, utils
 
@@ -54,12 +56,12 @@ DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 ############################################################
 
 
-class BalloonConfig(Config):
+class ArteryConfig(Config):
     """Configuration for training on the toy  dataset.
     Derives from the base Config class and overrides some values.
     """
     # Give the configuration a recognizable name
-    NAME = "balloon"
+    NAME = "artery"
 
     # We use a GPU with 12GB memory, which can fit two images.
     # Adjust down if you use a smaller GPU.
@@ -79,19 +81,19 @@ class BalloonConfig(Config):
 #  Dataset
 ############################################################
 
-class BalloonDataset(utils.Dataset):
+class ArteryDataset(utils.Dataset):
 
-    def load_balloon(self, dataset_dir, subset):
+    def load_artery(self, dataset_dir, subset):
         """Load a subset of the Balloon dataset.
         dataset_dir: Root directory of the dataset.
         subset: Subset to load: train or val
         """
         # Add classes. We have only one class to add.
-        self.add_class("balloon", 1, "balloon")
+        self.add_class("artery", 1, "artery")
 
         # Train or validation dataset?
         assert subset in ["train", "val"]
-        dataset_dir = os.path.join(dataset_dir, subset)
+        dataset_dir = os.path.join(dataset_dir, "Img_Train" if subset == "train" else "Img_Val")
 
         # Load annotations
         # VGG Image Annotator (up to version 1.6) saves each image in the form:
@@ -109,37 +111,50 @@ class BalloonDataset(utils.Dataset):
         # }
         # We mostly care about the x and y coordinates of each region
         # Note: In VIA 2.0, regions was changed from a dict to a list.
-        annotations = json.load(open(os.path.join(dataset_dir, "via_region_data.json")))
-        annotations = list(annotations.values())  # don't need the dict keys
+        ###Commenting lines "annotations" to original "self.add_image()"
+        # annotations = json.load(open(os.path.join(dataset_dir, "via_region_data.json")))
+        # annotations = list(annotations.values())  # don't need the dict keys
 
-        # The VIA tool saves images in the JSON even if they don't have any
-        # annotations. Skip unannotated images.
-        annotations = [a for a in annotations if a['regions']]
+        # # The VIA tool saves images in the JSON even if they don't have any
+        # # annotations. Skip unannotated images.
+        # annotations = [a for a in annotations if a['regions']]
 
-        # Add images
-        for a in annotations:
-            # Get the x, y coordinaets of points of the polygons that make up
-            # the outline of each object instance. These are stores in the
-            # shape_attributes (see json format above)
-            # The if condition is needed to support VIA versions 1.x and 2.x.
-            if type(a['regions']) is dict:
-                polygons = [r['shape_attributes'] for r in a['regions'].values()]
-            else:
-                polygons = [r['shape_attributes'] for r in a['regions']] 
+        # # Add images
+        # for a in annotations:
+        #     # Get the x, y coordinaets of points of the polygons that make up
+        #     # the outline of each object instance. These are stores in the
+        #     # shape_attributes (see json format above)
+        #     # The if condition is needed to support VIA versions 1.x and 2.x.
+        #     if type(a['regions']) is dict:
+        #         polygons = [r['shape_attributes'] for r in a['regions'].values()]
+        #     else:
+        #         polygons = [r['shape_attributes'] for r in a['regions']] 
 
-            # load_mask() needs the image size to convert polygons to masks.
-            # Unfortunately, VIA doesn't include it in JSON, so we must read
-            # the image. This is only managable since the dataset is tiny.
-            image_path = os.path.join(dataset_dir, a['filename'])
-            image = skimage.io.imread(image_path)
-            height, width = image.shape[:2]
+        #     # load_mask() needs the image size to convert polygons to masks.
+        #     # Unfortunately, VIA doesn't include it in JSON, so we must read
+        #     # the image. This is only managable since the dataset is tiny.
+        #     image_path = os.path.join(dataset_dir, a['filename'])
+        #     image = skimage.io.imread(image_path)
+        #     height, width = image.shape[:2]
+
+        #     self.add_image(
+        #         "artery",
+        #         image_id=a['filename'],  # use file name as a unique image id
+        #         path=image_path,
+        #         width=width, height=height,
+        #         polygons=polygons)
+
+        for img in os.listdir(dataset_dir):
+
+            image_id = img
+            image_path = os.path.join(dataset_dir, img)
 
             self.add_image(
-                "balloon",
-                image_id=a['filename'],  # use file name as a unique image id
-                path=image_path,
-                width=width, height=height,
-                polygons=polygons)
+                "artery",
+                image_id = image_id,
+                path = image_path,
+                width = 500, height = 280,
+                polygons = polygons)
 
     def load_mask(self, image_id):
         """Generate instance masks for an image.
@@ -150,7 +165,7 @@ class BalloonDataset(utils.Dataset):
         """
         # If not a balloon dataset image, delegate to parent class.
         image_info = self.image_info[image_id]
-        if image_info["source"] != "balloon":
+        if image_info["source"] != "artery":
             return super(self.__class__, self).load_mask(image_id)
 
         # Convert polygons to a bitmap mask of shape
