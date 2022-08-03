@@ -36,7 +36,7 @@ import skimage.draw
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
-# ROOT_DIR = '/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/'
+ROOT_DIR = '/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/'
 print(ROOT_DIR)
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
@@ -65,10 +65,10 @@ class BalloonConfig(Config):
 
     # We use a GPU with 12GB memory, which can fit two images.
     # Adjust down if you use a smaller GPU.
-    IMAGES_PER_GPU = 1
+    IMAGES_PER_GPU = 4
 
     #Changing backbone to resnet50 because my 6 GB 1060 can't fit a single image here <cries>
-    BACKBONE = "resnet50"
+    # BACKBONE = "resnet50"
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # Background + balloon
