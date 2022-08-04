@@ -33,6 +33,8 @@ import json
 import datetime
 import numpy as np
 import skimage.draw
+import skimage.io
+from pathlib import Path
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
@@ -73,8 +75,16 @@ class ArteryConfig(Config):
     # Number of training steps per epoch
     STEPS_PER_EPOCH = 100
 
-    # Skip detections with < 90% confidence
-    DETECTION_MIN_CONFIDENCE = 0.9
+    IMAGE_RESIZE_MODE = "square"
+    IMAGE_MIN_DIM = 256
+    IMAGE_MAX_DIM = 384
+
+    BACKBONE = "resnet50"
+
+    LEARNING_RATE = 0.003
+
+    # Skip detections with < 80% confidence
+    DETECTION_MIN_CONFIDENCE = 0.8
 
 
 ############################################################
@@ -153,8 +163,7 @@ class ArteryDataset(utils.Dataset):
                 "artery",
                 image_id = image_id,
                 path = image_path,
-                width = 500, height = 280,
-                polygons = polygons)
+                width = 500, height = 280)
 
     def load_mask(self, image_id):
         """Generate instance masks for an image.
@@ -164,19 +173,41 @@ class ArteryDataset(utils.Dataset):
         class_ids: a 1D array of class IDs of the instance masks.
         """
         # If not a balloon dataset image, delegate to parent class.
-        image_info = self.image_info[image_id]
-        if image_info["source"] != "artery":
-            return super(self.__class__, self).load_mask(image_id)
+        # image_info = self.image_info[image_id]
+        # if image_info["source"] != "artery":
+        #     return super(self.__class__, self).load_mask(image_id)
 
-        # Convert polygons to a bitmap mask of shape
-        # [height, width, instance_count]
+        # # Convert polygons to a bitmap mask of shape
+        # # [height, width, instance_count]
+        # info = self.image_info[image_id]
+        # mask = np.zeros([info["height"], info["width"], len(info["polygons"])],
+        #                 dtype=np.uint8)
+        # for i, p in enumerate(info["polygons"]):
+        #     # Get indexes of pixels inside the polygon and set them to 1
+        #     rr, cc = skimage.draw.polygon(p['all_points_y'], p['all_points_x'])
+        #     mask[rr, cc, i] = 1
+
+        #Relevant code below
+
         info = self.image_info[image_id]
-        mask = np.zeros([info["height"], info["width"], len(info["polygons"])],
-                        dtype=np.uint8)
-        for i, p in enumerate(info["polygons"]):
-            # Get indexes of pixels inside the polygon and set them to 1
-            rr, cc = skimage.draw.polygon(p['all_points_y'], p['all_points_x'])
-            mask[rr, cc, i] = 1
+
+        # print(info)
+
+        fname = info["id"]
+
+        if int(fname.split('.')[0]) < 2550:
+            fpath = os.path.join(Path(ROOT_DIR).parent.absolute(), 'data/Masks_Train/', fname)
+        else:
+            fpath = os.path.join(Path(ROOT_DIR).parent.absolute(), 'data/Masks_Val/', fname)
+
+        t_mask = skimage.io.imread(fpath)
+        mask = np.sum(t_mask, axis = 2)
+        mask = mask == 765
+
+        # print("before expand dims", mask.shape)
+        mask = np.expand_dims(mask, axis = 2)
+        # print("after expand dims", mask.shape)
+
 
         # Return mask, and array of class IDs of each instance. Since we have
         # one class ID only, we return an array of 1s
@@ -185,7 +216,7 @@ class ArteryDataset(utils.Dataset):
     def image_reference(self, image_id):
         """Return the path of the image."""
         info = self.image_info[image_id]
-        if info["source"] == "balloon":
+        if info["source"] == "artery":
             return info["path"]
         else:
             super(self.__class__, self).image_reference(image_id)
@@ -194,13 +225,13 @@ class ArteryDataset(utils.Dataset):
 def train(model):
     """Train the model."""
     # Training dataset.
-    dataset_train = BalloonDataset()
-    dataset_train.load_balloon(args.dataset, "train")
+    dataset_train = ArteryDataset()
+    dataset_train.load_artery(args.dataset, "train")
     dataset_train.prepare()
 
     # Validation dataset
-    dataset_val = BalloonDataset()
-    dataset_val.load_balloon(args.dataset, "val")
+    dataset_val = ArteryDataset()
+    dataset_val.load_artery(args.dataset, "val")
     dataset_val.prepare()
 
     # *** This training schedule is an example. Update to your needs ***
@@ -330,9 +361,9 @@ if __name__ == '__main__':
 
     # Configurations
     if args.command == "train":
-        config = BalloonConfig()
+        config = ArteryConfig()
     else:
-        class InferenceConfig(BalloonConfig):
+        class InferenceConfig(ArteryConfig):
             # Set batch size to 1 since we'll be running inference on
             # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
             GPU_COUNT = 1
