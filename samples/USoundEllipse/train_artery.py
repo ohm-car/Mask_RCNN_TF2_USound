@@ -38,7 +38,7 @@ from pathlib import Path
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
-# ROOT_DIR = '/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/'
+ROOT_DIR = '/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/'
 print(ROOT_DIR)
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
@@ -79,12 +79,12 @@ class ArteryConfig(Config):
     IMAGE_MIN_DIM = 256
     IMAGE_MAX_DIM = 384
 
-    BACKBONE = "resnet50"
+    # BACKBONE = "resnet50"
 
     LEARNING_RATE = 0.003
 
-    # Skip detections with < 80% confidence
-    DETECTION_MIN_CONFIDENCE = 0.8
+    # Skip detections with < 90% confidence
+    DETECTION_MIN_CONFIDENCE = 0.9
 
 
 ############################################################
@@ -241,8 +241,8 @@ def train(model):
     print("Training network heads")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=30,
-                layers='heads')
+                epochs=1800,
+                layers='all')
 
 
 def color_splash(image, mask):
