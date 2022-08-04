@@ -75,11 +75,14 @@ class ArteryConfig(Config):
     # Number of training steps per epoch
     STEPS_PER_EPOCH = 100
 
+    # Num epochs
+    EPOCHS = 1800
+
     IMAGE_RESIZE_MODE = "square"
     IMAGE_MIN_DIM = 256
     IMAGE_MAX_DIM = 384
 
-    # BACKBONE = "resnet50"
+    BACKBONE = "resnet50"
 
     LEARNING_RATE = 0.003
 
@@ -241,7 +244,7 @@ def train(model):
     print("Training network heads")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=1800,
+                epochs=config.EPOCHS,
                 layers='all')
 
 
