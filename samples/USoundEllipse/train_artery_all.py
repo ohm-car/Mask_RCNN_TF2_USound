@@ -83,9 +83,9 @@ class ArteryConfig(Config):
     IMAGE_MIN_DIM = 256
     IMAGE_MAX_DIM = 384
 
-    # BACKBONE = "resnet50"
+    BACKBONE = "resnet50"
 
-    LEARNING_RATE = 0.003
+    LEARNING_RATE = 0.002
 
     # Skip detections with < 90% confidence
     DETECTION_MIN_CONFIDENCE = 0.9
