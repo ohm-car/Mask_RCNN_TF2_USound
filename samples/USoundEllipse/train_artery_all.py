@@ -230,24 +230,41 @@ def create_train_val_list():
     list_val = list(set(all_imgs) - set(list_tr))
     return list_tr, list_val
 
+def create_train_val_list2():
+
+    all_imgs = os.listdir(args.dataset)
+    
+    list_tr = []
+    list_val = []
+    for i in range(449):
+        list_tr.append(str(6*i) + '.png')
+        list_tr.append(str(6*i+1) + '.png')
+        list_tr.append(str(6*i+2) + '.png')
+        list_tr.append(str(6*i+3) + '.png')
+        list_tr.append(str(6*i+4) + '.png')
+        list_val.append(str(6*i+5) + '.png')
+
+    assert set(list_val) == set(list(set(all_imgs) - set(list_tr)))
+    return list_tr, list_val
 
 def train(model):
     """Train the model."""
     # Training dataset.
+    l_tr, l_ts = create_train_val_list2()
     dataset_train = ArteryDataset()
-    dataset_train.load_artery(args.dataset, create_train_val_list()[0])
+    dataset_train.load_artery(args.dataset, l_tr)
     dataset_train.prepare()
 
     # Validation dataset
     dataset_val = ArteryDataset()
-    dataset_val.load_artery(args.dataset, create_train_val_list()[1])
+    dataset_val.load_artery(args.dataset, l_ts)
     dataset_val.prepare()
 
     # *** This training schedule is an example. Update to your needs ***
     # Since we're using a very small dataset, and starting from
     # COCO trained weights, we don't need to train too long. Also,
     # no need to train all layers, just the heads should do it.
-    print("Training network heads")
+    # print("Training network heads")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
                 epochs=config.EPOCHS,

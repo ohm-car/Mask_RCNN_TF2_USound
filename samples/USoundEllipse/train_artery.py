@@ -38,7 +38,7 @@ from pathlib import Path
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
-ROOT_DIR = '/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/'
+# ROOT_DIR = '/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/'
 print(ROOT_DIR)
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
@@ -82,7 +82,7 @@ class ArteryConfig(Config):
     IMAGE_MIN_DIM = 256
     IMAGE_MAX_DIM = 384
 
-    BACKBONE = "resnet50"
+    # BACKBONE = "resnet50"
 
     LEARNING_RATE = 0.003
 
