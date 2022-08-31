@@ -54,6 +54,9 @@ class Config(object):
     # to COMPUTE_BACKBONE_SHAPE as well
     BACKBONE = "resnet101"
 
+    # Number of Epochs to train for
+    EPOCHS = 100
+
     # Only useful if you supply a callable to BACKBONE. Should compute
     # the shape of each layer of the FPN Pyramid.
     # See model.compute_backbone_shapes
@@ -209,6 +212,8 @@ class Config(object):
 
     # Gradient norm clipping
     GRADIENT_CLIP_NORM = 5.0
+
+    DROPOUT = None
 
     def __init__(self):
         """Set values of computed attributes."""

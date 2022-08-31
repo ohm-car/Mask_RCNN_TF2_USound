@@ -32,11 +32,14 @@ import sys
 import json
 import datetime
 import numpy as np
+import random
 import skimage.draw
+import skimage.io
+from pathlib import Path
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
-ROOT_DIR = '/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/'
+# ROOT_DIR = '/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/'
 print(ROOT_DIR)
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
@@ -56,25 +59,37 @@ DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 ############################################################
 
 
-class BalloonConfig(Config):
+class ArteryConfig(Config):
     """Configuration for training on the toy  dataset.
     Derives from the base Config class and overrides some values.
     """
     # Give the configuration a recognizable name
-    NAME = "balloon"
+    NAME = "artery"
 
     # We use a GPU with 12GB memory, which can fit two images.
     # Adjust down if you use a smaller GPU.
-    IMAGES_PER_GPU = 4
-
-    #Changing backbone to resnet50 because my 6 GB 1060 can't fit a single image here <cries>
-    # BACKBONE = "resnet50"
+    IMAGES_PER_GPU = 2
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # Background + balloon
 
     # Number of training steps per epoch
     STEPS_PER_EPOCH = 100
+
+    # Num epochs
+    EPOCHS = 1800
+
+    IMAGE_RESIZE_MODE = "square"
+    IMAGE_MIN_DIM = 256
+    IMAGE_MAX_DIM = 384
+
+    # BACKBONE = "resnet50"
+
+    TRAIN_BN = None
+
+    DROPOUT = 0.1
+
+    LEARNING_RATE = 0.002
 
     # Skip detections with < 90% confidence
     DETECTION_MIN_CONFIDENCE = 0.9
@@ -84,19 +99,19 @@ class BalloonConfig(Config):
 #  Dataset
 ############################################################
 
-class BalloonDataset(utils.Dataset):
+class ArteryDataset(utils.Dataset):
 
-    def load_balloon(self, dataset_dir, subset):
+    def load_artery(self, dataset_dir, image_list):
         """Load a subset of the Balloon dataset.
         dataset_dir: Root directory of the dataset.
         subset: Subset to load: train or val
         """
         # Add classes. We have only one class to add.
-        self.add_class("balloon", 1, "balloon")
+        self.add_class("artery", 1, "artery")
 
         # Train or validation dataset?
-        assert subset in ["train", "val"]
-        dataset_dir = os.path.join(dataset_dir, subset)
+        # assert subset in ["train", "val"]
+        # dataset_dir = os.path.join(dataset_dir, "Img_Train" if subset == "train" else "Img_Val")
 
         # Load annotations
         # VGG Image Annotator (up to version 1.6) saves each image in the form:
@@ -114,37 +129,49 @@ class BalloonDataset(utils.Dataset):
         # }
         # We mostly care about the x and y coordinates of each region
         # Note: In VIA 2.0, regions was changed from a dict to a list.
-        annotations = json.load(open(os.path.join(dataset_dir, "via_region_data.json")))
-        annotations = list(annotations.values())  # don't need the dict keys
+        ###Commenting lines "annotations" to original "self.add_image()"
+        # annotations = json.load(open(os.path.join(dataset_dir, "via_region_data.json")))
+        # annotations = list(annotations.values())  # don't need the dict keys
 
-        # The VIA tool saves images in the JSON even if they don't have any
-        # annotations. Skip unannotated images.
-        annotations = [a for a in annotations if a['regions']]
+        # # The VIA tool saves images in the JSON even if they don't have any
+        # # annotations. Skip unannotated images.
+        # annotations = [a for a in annotations if a['regions']]
 
-        # Add images
-        for a in annotations:
-            # Get the x, y coordinaets of points of the polygons that make up
-            # the outline of each object instance. These are stores in the
-            # shape_attributes (see json format above)
-            # The if condition is needed to support VIA versions 1.x and 2.x.
-            if type(a['regions']) is dict:
-                polygons = [r['shape_attributes'] for r in a['regions'].values()]
-            else:
-                polygons = [r['shape_attributes'] for r in a['regions']] 
+        # # Add images
+        # for a in annotations:
+        #     # Get the x, y coordinaets of points of the polygons that make up
+        #     # the outline of each object instance. These are stores in the
+        #     # shape_attributes (see json format above)
+        #     # The if condition is needed to support VIA versions 1.x and 2.x.
+        #     if type(a['regions']) is dict:
+        #         polygons = [r['shape_attributes'] for r in a['regions'].values()]
+        #     else:
+        #         polygons = [r['shape_attributes'] for r in a['regions']] 
 
-            # load_mask() needs the image size to convert polygons to masks.
-            # Unfortunately, VIA doesn't include it in JSON, so we must read
-            # the image. This is only managable since the dataset is tiny.
-            image_path = os.path.join(dataset_dir, a['filename'])
-            image = skimage.io.imread(image_path)
-            height, width = image.shape[:2]
+        #     # load_mask() needs the image size to convert polygons to masks.
+        #     # Unfortunately, VIA doesn't include it in JSON, so we must read
+        #     # the image. This is only managable since the dataset is tiny.
+        #     image_path = os.path.join(dataset_dir, a['filename'])
+        #     image = skimage.io.imread(image_path)
+        #     height, width = image.shape[:2]
+
+        #     self.add_image(
+        #         "artery",
+        #         image_id=a['filename'],  # use file name as a unique image id
+        #         path=image_path,
+        #         width=width, height=height,
+        #         polygons=polygons)
+
+        for img in image_list:
+
+            image_id = img
+            image_path = os.path.join(dataset_dir, img)
 
             self.add_image(
-                "balloon",
-                image_id=a['filename'],  # use file name as a unique image id
-                path=image_path,
-                width=width, height=height,
-                polygons=polygons)
+                "artery",
+                image_id = image_id,
+                path = image_path,
+                width = 500, height = 280)
 
     def load_mask(self, image_id):
         """Generate instance masks for an image.
@@ -154,19 +181,38 @@ class BalloonDataset(utils.Dataset):
         class_ids: a 1D array of class IDs of the instance masks.
         """
         # If not a balloon dataset image, delegate to parent class.
-        image_info = self.image_info[image_id]
-        if image_info["source"] != "balloon":
-            return super(self.__class__, self).load_mask(image_id)
+        # image_info = self.image_info[image_id]
+        # if image_info["source"] != "artery":
+        #     return super(self.__class__, self).load_mask(image_id)
 
-        # Convert polygons to a bitmap mask of shape
-        # [height, width, instance_count]
+        # # Convert polygons to a bitmap mask of shape
+        # # [height, width, instance_count]
+        # info = self.image_info[image_id]
+        # mask = np.zeros([info["height"], info["width"], len(info["polygons"])],
+        #                 dtype=np.uint8)
+        # for i, p in enumerate(info["polygons"]):
+        #     # Get indexes of pixels inside the polygon and set them to 1
+        #     rr, cc = skimage.draw.polygon(p['all_points_y'], p['all_points_x'])
+        #     mask[rr, cc, i] = 1
+
+        #Relevant code below
+
         info = self.image_info[image_id]
-        mask = np.zeros([info["height"], info["width"], len(info["polygons"])],
-                        dtype=np.uint8)
-        for i, p in enumerate(info["polygons"]):
-            # Get indexes of pixels inside the polygon and set them to 1
-            rr, cc = skimage.draw.polygon(p['all_points_y'], p['all_points_x'])
-            mask[rr, cc, i] = 1
+
+        # print(info)
+
+        fname = info["id"]
+
+        fpath = os.path.join(Path(ROOT_DIR).parent.absolute(), 'data/Masks_All/', fname)
+
+        t_mask = skimage.io.imread(fpath)
+        mask = np.sum(t_mask, axis = 2)
+        mask = mask == 765
+
+        # print("before expand dims", mask.shape)
+        mask = np.expand_dims(mask, axis = 2)
+        # print("after expand dims", mask.shape)
+
 
         # Return mask, and array of class IDs of each instance. Since we have
         # one class ID only, we return an array of 1s
@@ -175,32 +221,57 @@ class BalloonDataset(utils.Dataset):
     def image_reference(self, image_id):
         """Return the path of the image."""
         info = self.image_info[image_id]
-        if info["source"] == "balloon":
+        if info["source"] == "artery":
             return info["path"]
         else:
             super(self.__class__, self).image_reference(image_id)
 
 
+def create_train_val_list():
+
+    all_imgs = os.listdir(args.dataset)
+    list_tr = random.sample(all_imgs, int(len(all_imgs)*0.85))
+    list_val = list(set(all_imgs) - set(list_tr))
+    return list_tr, list_val
+
+def create_train_val_list2():
+
+    all_imgs = os.listdir(args.dataset)
+    
+    list_tr = []
+    list_val = []
+    for i in range(449):
+        list_tr.append(str(6*i) + '.png')
+        list_tr.append(str(6*i+1) + '.png')
+        list_tr.append(str(6*i+2) + '.png')
+        list_tr.append(str(6*i+3) + '.png')
+        list_tr.append(str(6*i+4) + '.png')
+        list_val.append(str(6*i+5) + '.png')
+
+    assert set(list_val) == set(list(set(all_imgs) - set(list_tr)))
+    return list_tr, list_val
+
 def train(model):
     """Train the model."""
     # Training dataset.
-    dataset_train = BalloonDataset()
-    dataset_train.load_balloon(args.dataset, "train")
+    l_tr, l_ts = create_train_val_list2()
+    dataset_train = ArteryDataset()
+    dataset_train.load_artery(args.dataset, l_tr)
     dataset_train.prepare()
 
     # Validation dataset
-    dataset_val = BalloonDataset()
-    dataset_val.load_balloon(args.dataset, "val")
+    dataset_val = ArteryDataset()
+    dataset_val.load_artery(args.dataset, l_ts)
     dataset_val.prepare()
 
     # *** This training schedule is an example. Update to your needs ***
     # Since we're using a very small dataset, and starting from
     # COCO trained weights, we don't need to train too long. Also,
     # no need to train all layers, just the heads should do it.
-    print("Training network heads")
+    # print("Training network heads")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=900,
+                epochs=config.EPOCHS,
                 layers='all')
 
 
@@ -320,9 +391,9 @@ if __name__ == '__main__':
 
     # Configurations
     if args.command == "train":
-        config = BalloonConfig()
+        config = ArteryConfig()
     else:
-        class InferenceConfig(BalloonConfig):
+        class InferenceConfig(ArteryConfig):
             # Set batch size to 1 since we'll be running inference on
             # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
             GPU_COUNT = 1
@@ -363,6 +434,8 @@ if __name__ == '__main__':
             "mrcnn_bbox", "mrcnn_mask"])
     else:
         model.load_weights(weights_path, by_name=True)
+
+    print(model.keras_model.summary())
 
     # Train or evaluate
     if args.command == "train":
