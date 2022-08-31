@@ -39,7 +39,7 @@ from pathlib import Path
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
-ROOT_DIR = '/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/'
+# ROOT_DIR = '/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/'
 print(ROOT_DIR)
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
@@ -68,7 +68,7 @@ class ArteryConfig(Config):
 
     # We use a GPU with 12GB memory, which can fit two images.
     # Adjust down if you use a smaller GPU.
-    IMAGES_PER_GPU = 20
+    IMAGES_PER_GPU = 2
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # Background + balloon
@@ -84,6 +84,10 @@ class ArteryConfig(Config):
     IMAGE_MAX_DIM = 384
 
     # BACKBONE = "resnet50"
+
+    TRAIN_BN = None
+
+    DROPOUT = 0.8
 
     LEARNING_RATE = 0.002
 
