@@ -67,7 +67,7 @@ class ArteryConfig(Config):
 
     # We use a GPU with 12GB memory, which can fit two images.
     # Adjust down if you use a smaller GPU.
-    IMAGES_PER_GPU = 3
+    IMAGES_PER_GPU = 12
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # Background + balloon
@@ -75,16 +75,19 @@ class ArteryConfig(Config):
     # Number of training steps per epoch
     STEPS_PER_EPOCH = 100
 
+    # Num epochs
+    EPOCHS = 1800
+
     IMAGE_RESIZE_MODE = "square"
     IMAGE_MIN_DIM = 256
     IMAGE_MAX_DIM = 384
 
-    BACKBONE = "resnet50"
+    # BACKBONE = "resnet50"
 
     LEARNING_RATE = 0.003
 
-    # Skip detections with < 80% confidence
-    DETECTION_MIN_CONFIDENCE = 0.8
+    # Skip detections with < 90% confidence
+    DETECTION_MIN_CONFIDENCE = 0.9
 
 
 ############################################################
@@ -241,8 +244,8 @@ def train(model):
     print("Training network heads")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
-                epochs=30,
-                layers='heads')
+                epochs=config.EPOCHS,
+                layers='all')
 
 
 def color_splash(image, mask):
