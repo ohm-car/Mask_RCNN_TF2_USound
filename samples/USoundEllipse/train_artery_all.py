@@ -87,7 +87,7 @@ class ArteryConfig(Config):
 
     TRAIN_BN = None
 
-    DROPOUT = 0.8
+    DROPOUT = 0.1
 
     LEARNING_RATE = 0.002
 
@@ -434,6 +434,8 @@ if __name__ == '__main__':
             "mrcnn_bbox", "mrcnn_mask"])
     else:
         model.load_weights(weights_path, by_name=True)
+
+    print(model.keras_model.summary())
 
     # Train or evaluate
     if args.command == "train":
