@@ -39,7 +39,7 @@ from pathlib import Path
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
-# ROOT_DIR = '/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/'
+ROOT_DIR = '/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/'
 print(ROOT_DIR)
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
@@ -68,13 +68,13 @@ class ArteryConfig(Config):
 
     # We use a GPU with 12GB memory, which can fit two images.
     # Adjust down if you use a smaller GPU.
-    IMAGES_PER_GPU = 12
+    IMAGES_PER_GPU = 8
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # Background + balloon
 
     # Number of training steps per epoch
-    STEPS_PER_EPOCH = 100
+    STEPS_PER_EPOCH = 400
 
     # Num epochs
     EPOCHS = 1800
@@ -87,7 +87,7 @@ class ArteryConfig(Config):
 
     TRAIN_BN = None
 
-    DROPOUT = 0.2
+    DROPOUT = 0.5
 
     LEARNING_RATE = 0.002
 
@@ -203,7 +203,7 @@ class ArteryDataset(utils.Dataset):
 
         fname = info["id"]
 
-        fpath = os.path.join(Path(ROOT_DIR).parent.absolute(), 'data/Masks_All/', fname)
+        fpath = os.path.join(Path(ROOT_DIR).parent.absolute(), 'data/Masks_All_Squared/', fname)
 
         t_mask = skimage.io.imread(fpath)
         mask = np.sum(t_mask, axis = 2)
@@ -272,7 +272,7 @@ def train(model):
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
                 epochs=config.EPOCHS,
-                layers='all')
+                layers='heads')
 
 
 def color_splash(image, mask):
