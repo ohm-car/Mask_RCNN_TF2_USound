@@ -87,7 +87,7 @@ class ArteryConfig(Config):
 
     TRAIN_BN = None
 
-    DROPOUT = 0.5
+    DROPOUT = 0.3
 
     LEARNING_RATE = 0.002
 
