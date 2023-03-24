@@ -84,7 +84,7 @@ class ArteryConfig(Config):
     IMAGE_MIN_DIM = 256
     IMAGE_MAX_DIM = 384
 
-    # BACKBONE = "resnet50"
+    BACKBONE = "resnet50"
 
     TRAIN_BN = None
 
