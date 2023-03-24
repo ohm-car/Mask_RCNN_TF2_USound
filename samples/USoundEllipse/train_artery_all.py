@@ -36,6 +36,7 @@ import random
 import skimage.draw
 import skimage.io
 from pathlib import Path
+import pickle
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
@@ -77,7 +78,7 @@ class ArteryConfig(Config):
     STEPS_PER_EPOCH = 100
 
     # Num epochs
-    EPOCHS = 1800
+    EPOCHS = 3
 
     IMAGE_RESIZE_MODE = "square"
     IMAGE_MIN_DIM = 256
@@ -237,16 +238,22 @@ def create_train_val_list():
 def create_train_val_list2():
 
     all_imgs = os.listdir(args.dataset)
-    
+
     list_tr = []
     list_val = []
     for i in range(449):
-        list_tr.append(str(6*i) + '.png')
-        list_tr.append(str(6*i+1) + '.png')
-        list_tr.append(str(6*i+2) + '.png')
-        list_tr.append(str(6*i+3) + '.png')
-        list_tr.append(str(6*i+4) + '.png')
-        list_val.append(str(6*i+5) + '.png')
+        # list_tr.append(str(6*i) + '.png')
+        # list_tr.append(str(6*i+1) + '.png')
+        # list_tr.append(str(6*i+2) + '.png')
+        # list_tr.append(str(6*i+3) + '.png')
+        # list_tr.append(str(6*i+4) + '.png')
+        # list_val.append(str(6*i+5) + '.png')
+        list_tr.append('v1f' + str(i+1) + '.png')
+        list_tr.append('v2f' + str(i+1) + '.png')
+        list_tr.append('v4f' + str(i+1) + '.png')
+        list_tr.append('v5f' + str(i+1) + '.png')
+        list_tr.append('v6f' + str(i+1) + '.png')
+        list_val.append('v3f' + str(i+1) + '.png')
 
     assert set(list_val) == set(list(set(all_imgs) - set(list_tr)))
     return list_tr, list_val
@@ -269,10 +276,12 @@ def train(model):
     # COCO trained weights, we don't need to train too long. Also,
     # no need to train all layers, just the heads should do it.
     # print("Training network heads")
-    model.train(dataset_train, dataset_val,
+    hist = model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
                 epochs=config.EPOCHS,
                 layers='all')
+    with open('trainHistoryDict', 'wb') as file_pi:
+        pickle.dump(hist.history, file_pi)
 
 
 def color_splash(image, mask):
