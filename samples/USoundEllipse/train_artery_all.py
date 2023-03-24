@@ -78,7 +78,7 @@ class ArteryConfig(Config):
     STEPS_PER_EPOCH = 100
 
     # Num epochs
-    EPOCHS = 500
+    EPOCHS = 100
 
     IMAGE_RESIZE_MODE = "square"
     IMAGE_MIN_DIM = 256
