@@ -6,8 +6,8 @@
 #SBATCH --gres=gpu:1
 #SBATCH --time=10-12:00:00
 #SBATCH --constraint=rtx_6000
-#SBATCH --output=/nfs/ada/oates/users/omkark1/Thesis_Work/UNetSeg_PyTorch/outfiles/imrecon_run_1.out
-#SBATCH --error=/nfs/ada/oates/users/omkark1/Thesis_Work/UNetSeg_PyTorch/outfiles/imrecon_run_1.err
+#SBATCH --output=/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/outfiles/r50_run_1.out
+#SBATCH --error=/nfs/ada/oates/users/omkark1/ArteryProj/Mask_RCNN_TF2_USound/outfiles/r50_run_1.err
 
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
