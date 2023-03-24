@@ -78,7 +78,7 @@ class ArteryConfig(Config):
     STEPS_PER_EPOCH = 100
 
     # Num epochs
-    EPOCHS = 3
+    EPOCHS = 500
 
     IMAGE_RESIZE_MODE = "square"
     IMAGE_MIN_DIM = 256
@@ -280,7 +280,7 @@ def train(model):
                 learning_rate=config.LEARNING_RATE,
                 epochs=config.EPOCHS,
                 layers='all')
-    with open('trainHistoryDict', 'wb') as file_pi:
+    with open('trainHistoryDict' + str(config.BACKBONE), 'wb') as file_pi:
         pickle.dump(hist.history, file_pi)
 
 
