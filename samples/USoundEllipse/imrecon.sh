@@ -14,4 +14,4 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
 
 source activate mrcnn2
 
-python python train_artery_all.py train --weights=imagenet --dataset='../../../data/Img_All_Squared/' --logs='/nfs/ada/oates/users/omkark1/ArteryProj/checkpointsR50'
+python train_artery_all.py train --weights=imagenet --dataset='../../../data/Img_All_Squared/' --logs='/nfs/ada/oates/users/omkark1/ArteryProj/checkpointsR50'
